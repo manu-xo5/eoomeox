@@ -1,0 +1,23 @@
+{
+    "name": "eoomeox",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "main": "electron.js",
+    "scripts": {
+        "dev:vite": "vite",
+        "dev:e": "electron .",
+        "build": "tsc && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "solid-js": "^1.8.7"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.6",
+        "electron": "^28.1.1",
+        "typescript": "^5.2.2",
+        "vite": "^5.0.8",
+        "vite-plugin-solid": "^2.8.0"
+    }
+}
