@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "node:path";
-import fs from "node:fs/promises"
+import fs from "node:fs/promises";
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -23,7 +23,19 @@ async function main() {
     });
     if (result.canceled) return null;
 
-    return await fs.readdir(result.filePaths[0])
+    const dirPath = result.filePaths[0];
+    const filePaths = await fs.readdir(dirPath);
+    const fileBins = await Promise.all(
+      filePaths.map((relativePath) =>
+        fs.readFile(path.join(dirPath, relativePath), "base64"),
+      ),
+    );
+    const files = fileBins.map((file, i) => ({
+      name: filePaths[i],
+      file: file,
+    }));
+
+    return { files, dirPath };
   });
 
   createWindow();
