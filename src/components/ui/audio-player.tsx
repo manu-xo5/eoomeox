@@ -4,27 +4,25 @@ export const AudioPlayer = (props: ComponentProps<"audio">) => {
   const [time, setTime] = createSignal(0);
   const [duration, setDuration] = createSignal(0);
 
-  onMount(() => {
-    ref.addEventListener("loadeddata", (ev) => {
-      setDuration(ev.target.duration);
-    });
-
-    ref.addEventListener("timeupdate", (ev) => {
-      console.log(ev.target.currentTime);
-      setTime(ev.target.currentTime);
-    });
-  });
-
   return (
-    <>
-      <audio ref={ref} {...props} controls></audio>
+    <div>
+      <audio
+        onLoadedData={(ev) => {
+          setDuration(ev.currentTarget.duration);
+        }}
+        onTimeUpdate={(ev) => {
+          setTime(ev.currentTarget.currentTime);
+        }}
+        ref={ref!}
+        {...props}
+        controls
+      ></audio>
 
-      <progress value={time()} max={duration()}></progress>
-      <span>{time()}</span>
+      <input type="range" value={time()} max={duration()} />
 
       <button onClick={() => (ref.paused ? ref.play() : ref.pause())}>
         play
       </button>
-    </>
+    </div>
   );
 };

@@ -6,10 +6,12 @@ export function App() {
     Record<string, { name: string; file: string }[]>
   >({});
 
+  const [queue, setQueue] = createSignal<string[]>([]);
+
   const [track, setTrack] = createSignal<string>("");
 
   return (
-    <div>
+    <div class="grid grid-cols-3">
       <button
         onClick={async () => {
           const data = await window.dialog.openDirDialog();
