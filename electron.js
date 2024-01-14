@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from "electron";
 import path from "node:path";
 import fs from "node:fs/promises";
 
@@ -9,6 +9,9 @@ function createWindow() {
       preload: path.join(app.getAppPath(), "preload.cjs"),
     },
   });
+
+  nativeTheme.themeSource = "dark"
+  console.log(nativeTheme.themeSource)
 
   if (process.env.NODE_ENV === "production") win.loadFile("/dist/index.html");
   else win.loadURL("http://localhost:5173");
