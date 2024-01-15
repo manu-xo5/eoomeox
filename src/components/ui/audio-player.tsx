@@ -2,7 +2,8 @@ import { ComponentProps, createSignal } from "solid-js";
 import { PlayIcon } from "@/components/icons/play-icon";
 import { Button } from "@/components/ui/button";
 import { PauseIcon } from "@/components/icons/pause-icon";
-import { Slider } from "./slider";
+import { Slider, SliderFill, SliderThumb, SliderTrack } from "./slider";
+import { VolumeFullIcon } from "../icons/volume-full-icon";
 
 export const AudioPlayer = (props: ComponentProps<"audio">) => {
   let ref: HTMLAudioElement;
@@ -44,14 +45,35 @@ export const AudioPlayer = (props: ComponentProps<"audio">) => {
         </Button>
       </div>
 
-      <div class="flex gap-4">
+      <div class="flex gap-6 items-center">
         <span>{formatDuration(Math.floor(time()))}</span>
+        {/* <Slider */}
+        {/*   value={time()} */}
+        {/*   max={duration()} */}
+        {/*   onChange={(ev) => (ref.currentTime = +ev.currentTarget.value)} */}
+        {/* /> */}
         <Slider
-          value={time()}
-          max={duration()}
-          onChange={(ev) => (ref.currentTime = +ev.currentTarget.value)}
-        />
+          minValue={0}
+          maxValue={duration()}
+          value={[time()]}
+          onChange={(value) => (ref.currentTime = +value[0])}
+        >
+          <SliderTrack>
+            <SliderFill />
+            <SliderThumb />
+          </SliderTrack>
+        </Slider>
         <span>{formatDuration(Math.floor(duration()))}</span>
+
+        <div>
+          <span class="group">
+            <Button size="icon" variant="ghost" class="rounded-full">
+              <VolumeFullIcon />
+            </Button>
+
+            <span></span>
+          </span>
+        </div>
       </div>
 
       <audio

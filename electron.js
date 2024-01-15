@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from "electron";
+import isDev from "electron-is-dev"
 import path from "node:path";
 import fs from "node:fs/promises";
 
@@ -10,11 +11,11 @@ function createWindow() {
     },
   });
 
-  nativeTheme.themeSource = "dark"
-  console.log(nativeTheme.themeSource)
-
-  if (process.env.NODE_ENV === "production") win.loadFile("/dist/index.html");
-  else win.loadURL("http://localhost:5173");
+  nativeTheme.themeSource = "dark";
+  if (!isDev) {
+    console.info("Creating Production Build");
+    win.loadFile(path.join(app.getAppPath(), "/dist/index.html"));
+  } else win.loadURL("http://localhost:5173");
 }
 
 async function main() {

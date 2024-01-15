@@ -1,13 +1,59 @@
-import { cn } from "@/lib/utils";
-import { ComponentProps } from "solid-js";
+import type { Component } from "solid-js";
+import { splitProps } from "solid-js";
 
-export const Slider = (props: ComponentProps<"input">) => (
-  <input
-    type="range"
-    {...props}
-    class={cn(
-      "appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-secondary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 flex-1 outline-none  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-secondary-foreground [&::-webkit-slider-thumb]:absolute [&::-webkit-slider-thumb]:-translate-y-1/4",
-      props.class,
-    )}
-  />
-);
+import { Slider as SliderPrimitive } from "@kobalte/core";
+
+import { cn } from "@/lib/utils";
+
+const Slider: Component<SliderPrimitive.SliderRootProps> = (props) => {
+  const [, rest] = splitProps(props, ["class"]);
+  return (
+    <SliderPrimitive.Root
+      class={cn(
+        "relative flex w-full touch-none select-none flex-col items-center",
+        props.class,
+      )}
+      {...rest}
+    />
+  );
+};
+
+const SliderTrack: Component<SliderPrimitive.SliderTrackProps> = (props) => {
+  const [, rest] = splitProps(props, ["class"]);
+  return (
+    <SliderPrimitive.Track
+      class={cn(
+        "bg-secondary relative h-2 w-full grow rounded-full",
+        props.class,
+      )}
+      {...rest}
+    />
+  );
+};
+
+const SliderFill: Component<SliderPrimitive.SliderFillProps> = (props) => {
+  const [, rest] = splitProps(props, ["class"]);
+  return (
+    <SliderPrimitive.Fill
+      class={cn("bg-primary absolute h-full", props.class)}
+      {...rest}
+    />
+  );
+};
+
+const SliderThumb: Component<SliderPrimitive.SliderThumbProps> = (props) => {
+  const [, rest] = splitProps(props, ["class", "children"]);
+  return (
+    <SliderPrimitive.Thumb
+      class={cn(
+        "border-primary bg-background ring-offset-background focus-visible:ring-ring top-[-6px] block h-5 w-5 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        props.class,
+      )}
+      {...rest}
+    >
+      <SliderPrimitive.Input />
+    </SliderPrimitive.Thumb>
+  );
+};
+
+export { Slider, SliderTrack, SliderFill, SliderThumb };
