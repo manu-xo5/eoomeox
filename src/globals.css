@@ -47,3 +47,18 @@
     @apply px-4;
   }
 }
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  @apply bg-secondary rounded-full;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  @apply bg-white/20 rounded-full;
+}

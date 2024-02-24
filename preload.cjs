@@ -1,4 +1,4 @@
-const { dialog, contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld("fs", fs);
 contextBridge.exposeInMainWorld("dialog", {
   openDirDialog: () => ipcRenderer.invoke("openDirDialog"),
 });
+contextBridge.exposeInMainWorld("download", (url) =>
+  ipcRenderer.invoke("download", url),
+);
 
 contextBridge.exposeInMainWorld("x", {
   openDirDialog: async () => {

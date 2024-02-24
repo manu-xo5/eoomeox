@@ -3,6 +3,7 @@ import { PlayIcon } from "@/components/icons/play-icon";
 import { Button } from "@/components/ui/button";
 import { PauseIcon } from "@/components/icons/pause-icon";
 import { Slider, SliderFill, SliderThumb, SliderTrack } from "./slider";
+import { Slider as KSlider } from "@kobalte/core";
 import { VolumeFullIcon } from "../icons/volume-full-icon";
 
 export const AudioPlayer = (props: ComponentProps<"audio">) => {
@@ -10,6 +11,7 @@ export const AudioPlayer = (props: ComponentProps<"audio">) => {
   const [time, setTime] = createSignal(0);
   const [duration, setDuration] = createSignal(0);
   const [status, setStatus] = createSignal<"paused" | "playing">("paused");
+  const [volume, setVolume] = createSignal(0);
 
   const formatDuration = (seconds: number) => {
     const time = new Date(0);
@@ -45,41 +47,66 @@ export const AudioPlayer = (props: ComponentProps<"audio">) => {
         </Button>
       </div>
 
-      <div class="flex gap-6 items-center">
-        <span>{formatDuration(Math.floor(time()))}</span>
-        {/* <Slider */}
-        {/*   value={time()} */}
-        {/*   max={duration()} */}
-        {/*   onChange={(ev) => (ref.currentTime = +ev.currentTarget.value)} */}
-        {/* /> */}
-        <Slider
-          minValue={0}
-          maxValue={duration()}
-          value={[time()]}
-          onChange={(value) => (ref.currentTime = +value[0])}
-        >
-          <SliderTrack>
-            <SliderFill />
-            <SliderThumb />
-          </SliderTrack>
-        </Slider>
-        <span>{formatDuration(Math.floor(duration()))}</span>
+      <div class="grid grid-cols-[0.1fr,0.8fr,0.1fr] gap-4 items-center">
+        <div />
 
-        <div>
-          <span class="group">
-            <Button size="icon" variant="ghost" class="rounded-full">
-              <VolumeFullIcon />
-            </Button>
-
-            <span></span>
-          </span>
+        <div class="flex items-center text-xs">
+          <span>{formatDuration(Math.floor(time()))}</span>
+          <Slider
+            class="px-4"
+            minValue={0}
+            maxValue={duration()}
+            value={[time()]}
+            onChange={(value) => (ref.currentTime = +value[0])}
+          >
+            <SliderTrack>
+              <SliderFill />
+              <SliderThumb />
+            </SliderTrack>
+          </Slider>
+          <span>{formatDuration(Math.floor(duration()))}</span>
         </div>
+
+        <span class="flex group relative justify-center items-center">
+          <Button
+            size="icon"
+            variant="ghost"
+            class="flex-shrink-0 rounded-full"
+          >
+            <VolumeFullIcon />
+          </Button>
+
+          <span class="absolute block bottom-full rounded-sm">
+            <KSlider.Root
+              class="flex-col items-center h-40 w-2"
+              orientation="vertical"
+              minValue={0}
+              maxValue={100}
+              value={[volume() * 100]}
+              onChange={(values) => {
+                ref.volume = values[0] / 100;
+                setVolume(values[0] / 100);
+              }}
+            >
+              <KSlider.Track class="rounded-full bg-secondary h-full w-full">
+                <KSlider.Fill class="absolute bg-white w-full rounded-full" />
+
+                <KSlider.Thumb class="active:ring active:border-transparent ring-white bg-black border-2 outline-none border-white active:bg-accent block w-4 h-4 -left-1 rounded-full">
+                  <KSlider.Input />
+                </KSlider.Thumb>
+              </KSlider.Track>
+            </KSlider.Root>
+          </span>
+        </span>
       </div>
 
       <audio
         hidden
         onPlay={() => setStatus("playing")}
         onPause={() => setStatus("paused")}
+        onVolumeChange={(ev) => {
+          setVolume(ev.currentTarget.volume);
+        }}
         onLoadedData={(ev) => {
           setDuration(ev.currentTarget.duration);
           ev.currentTarget.play();
