@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/norm/Applications/emeox.AppImage
+Terminal=false
+Categories=System;
+
+Name=Emeox
+GenericName=Music Player
+Comment=A linux music player
+StartupNotify=true
+StartupWMClass=Emeox
+Actions=New;

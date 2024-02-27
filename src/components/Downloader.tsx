@@ -2,12 +2,15 @@ import { For, createEffect, createSignal } from "solid-js";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
-import { FiInfo, FiMusic, FiVideo } from "solid-icons/fi";
+import { FiInfo, FiLoader, FiMusic, FiVideo } from "solid-icons/fi";
 import { invariantAppError } from "@/lib/invariant";
 import { toast } from "./ui/toast";
+import { Dialog as DialogPrimitive } from "@kobalte/core";
+import { listeners } from "process";
 
-export const Downloader = () => {
+export const Downloader = (props: DialogPrimitive.DialogRootProps) => {
   const [open] = createSignal(false);
+  const [downloadStatus, setDownloadStatus] = createSignal("idle");
   const [url, setUrl] = createSignal(
     "https://www.youtube.com/watch?v=MAEzNKigRVQ",
   );
@@ -23,7 +26,7 @@ export const Downloader = () => {
   });
 
   return (
-    <Dialog open={true}>
+    <Dialog {...props}>
       <DialogContent showCloseButton={false}>
         <div class="flex flex-col items-start fixed w-[70vw] max-w-[800px] h-[400px] bg-primary-foreground border border-accent shadow shadow-accent top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 rounded-md p-3">
           <Input
@@ -35,10 +38,10 @@ export const Downloader = () => {
             <Button
               onClick={async () => {
                 setStatus("loading");
-                const res = await (window as any).download(url());
+                const res = await (window as any).getFormats(url());
                 setStatus("idle");
                 const json = JSON.parse(res.join(""));
-
+                console.log(json.formats[4]);
                 const formats = json.formats
                   .map((format: any) => ({
                     format_id: format.format_id,
@@ -64,9 +67,16 @@ export const Downloader = () => {
                 setFormats(formats);
               }}
             >
-              Fetch {status() === "loading" ? "..." : ""}
+              {status() === "loading" ? (
+                <FiLoader class="animate-spin" />
+              ) : (
+                "Fetch"
+              )}
             </Button>
-            <Button>Close</Button>
+
+            <DialogPrimitive.CloseButton>
+              <Button>Close</Button>
+            </DialogPrimitive.CloseButton>
 
             <p class="ml-auto text-xs text-muted-foreground px-1.5">
               Powered by yt-dlp
@@ -78,7 +88,7 @@ export const Downloader = () => {
             Click to download file
           </p>
 
-          <div class="overflow-y-auto w-full space-y-2 mt-2 [::-webkit-scrollbar-thumb]:bg-primary-foreground ">
+          <div class="overflow-y-auto w-full space-y-2 mt-2 [::-webkit-scrollbar-thumb]:bg-primary-foreground pr-1">
             <For
               each={
                 formats() as Array<{
@@ -91,11 +101,34 @@ export const Downloader = () => {
                 }>
               }
             >
-              {(format, i) => (
+              {(format) => (
                 <Button
                   class="w-full text-left justify-start flex items-center gap-2 bg-secondary text-secondary-foreground rounded-md px-3 py-1 text-sm"
-                  onClick={() => {
-                    toast({ title: "clicked on formatid " + format.format_id });
+                  onClick={async () => {
+                    try {
+                      const ext =
+                        format.video_ext !== "none"
+                          ? format.video_ext
+                          : format.audio_ext;
+                      toast({ title: "Downloading - " + ext });
+                      const listener = (await (window as any).download(
+                        url(),
+                        ext,
+                        format.format_id,
+                      )) as { onData(data: any): void };
+                      console.log(listener);
+                      toast({ title: "Downloaded" });
+                    } catch (e) {
+                      console.error(e);
+                      const message =
+                        e instanceof Error ? e.message : undefined;
+
+                      toast({
+                        title: "Failed Downloading",
+                        description: message,
+                        variant: "destructive",
+                      });
+                    }
                   }}
                 >
                   {format.video_ext !== "none" ? <FiVideo /> : <FiMusic />}

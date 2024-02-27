@@ -6,9 +6,13 @@ contextBridge.exposeInMainWorld("fs", fs);
 contextBridge.exposeInMainWorld("dialog", {
   openDirDialog: () => ipcRenderer.invoke("openDirDialog"),
 });
-contextBridge.exposeInMainWorld("download", (url) =>
-  ipcRenderer.invoke("download", url),
+contextBridge.exposeInMainWorld("getFormats", (url) =>
+  ipcRenderer.invoke("getFormats", url),
 );
+contextBridge.exposeInMainWorld("download", (...args) => {
+  console.log("hey<", ...args);
+  return ipcRenderer.invoke("download", ...args);
+});
 
 contextBridge.exposeInMainWorld("x", {
   openDirDialog: async () => {

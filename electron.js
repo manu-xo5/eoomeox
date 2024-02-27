@@ -23,9 +23,16 @@ function createWindow() {
 async function main() {
   await app.whenReady();
 
-  ipcMain.handle("download", (_e, url) => {
-    console.log("download()");
+  ipcMain.handle("getFormats", (_e, url) => {
+    console.log("getFormats() spawned");
     return getFormats(url);
+  });
+
+  ipcMain.handle("download", (_e, ...args) => {
+    console.log("download()");
+
+    console.log(...args);
+    return downloadVideoUsingYtDlp(...args);
   });
   ipcMain.handle("openDirDialog", async () => {
     const result = await dialog.showOpenDialog({
@@ -81,4 +88,52 @@ function getFormats(url) {
       }
     });
   });
+}
+
+/**
+ * @param {string} url
+ * @param {string} formatExt
+ * @param {string} formatId
+ */
+function downloadVideoUsingYtDlp(url, _formatExt, formatId) {
+  const ytdlp = spawn("yt-dlp", [
+    url,
+    "-o",
+    `~/music/%(title)s.%(ext)s`,
+    "-f",
+    formatId,
+    "-w",
+    "--no-part",
+  ]);
+  let data = "";
+
+  const res = () => {};
+  const rej = () => {};
+
+  function* listener() {
+    ytdlp.stdout.on("data", (stdData) => {
+      console.log(data.toString());
+      data += stdData.toString();
+
+      console.log(listener.listen);
+      stdData.toString();
+    });
+
+    ytdlp.stderr.on("data", (data) => {
+      console.error(data.toString());
+      rej(data.toString());
+      return false;
+    });
+
+    ytdlp.on("error", (_err) => {
+      rej("yt-dlp not found. Please install it.");
+      return false;
+    });
+
+    ytdlp.on("close", (_code) => {
+      res(data);
+      return true;
+    });
+  }
+  return listener();
 }

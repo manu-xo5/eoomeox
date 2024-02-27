@@ -15,6 +15,7 @@ export function App() {
   const [directoryList, setDirectoryList] = createSignal<
     Record<string, { name: string; file: string }[]>
   >({});
+  const [modal, setModal] = createSignal("");
 
   const [_queue, _setQueue] = createSignal<string[]>([]);
 
@@ -35,12 +36,12 @@ export function App() {
             <div class="flex-1">
               {Object.entries(directoryList()).map(([dir, files]) => (
                 <>
-                  <p class="p-2 truncate">
+                  <p class="px-2 mt-2 truncate">
                     <span class="font-bold">Album:</span> {dir}
                   </p>
                   {files.map(({ name, file }) => (
                     <Button
-                      class="border w-full justify-between capitalize group gap-2"
+                      class="border mt-2 px-2 w-full text-left justify-between capitalize group gap-2"
                       variant="ghost"
                       onClick={() => {
                         setTrack({
@@ -49,9 +50,11 @@ export function App() {
                         });
                       }}
                     >
-                      {formatName(name)}
+                      <span class="block truncate flex-1">
+                        {formatName(name)}
+                      </span>
 
-                      <span class="group-hover:opacity-100 transition-opacity opacity-0">
+                      <span class="flex-none group-hover:opacity-100 transition-opacity opacity-0">
                         <PlayIcon />
                       </span>
                     </Button>
@@ -64,12 +67,12 @@ export function App() {
               class="mt-auto"
               onClick={async () => {
                 try {
-                const data = await window.dialog.openDirDialog();
+                  const data = await window.dialog.openDirDialog();
 
-                invariantAppError(data, "No data");
+                  invariantAppError(data, "No data");
 
-                const { dirPath, files } = data;
-                setDirectoryList({ [dirPath]: files });
+                  const { dirPath, files } = data;
+                  setDirectoryList({ [dirPath]: files });
                 } catch (e) {
                   if (e instanceof AppError) {
                     return;
@@ -77,34 +80,45 @@ export function App() {
 
                   toast({
                     title: "failed to load dir",
-                  })
+                  });
                 }
               }}
             >
               Browse
             </Button>
+
+            <Button
+              class="mt-3"
+              onClick={async () => {
+                setModal("downloader");
+              }}
+            >
+              Download
+            </Button>
           </div>
 
-          <div class="flex flex-col">
+          <div class="flex flex-col border">
             {track()?.name ? (
-              <TextArc
-                class="flex-1 self-center justify-self-center animate-spin duration-2000"
-                text={formatName(track()?.name || "")}
-                width="30%"
-                fill="white"
-              />
+              <div class="flex-1 flex justify-center items-center">
+                <TextArc
+                  class="animate-spin duration-2000"
+                  text={formatName(track()?.name || "")}
+                  width="30%"
+                  fill="white"
+                />
+              </div>
             ) : (
               <p class="[-webkit-text-stroke:1px_#ccc] text-6xl">Eoomeox</p>
             )}
           </div>
         </div>
 
-        <div class="border-t rounded-t-md col-span-2 mt-auto p-4">
+        <div class="border-t rounded-t-md mt-auto p-4">
           <AudioPlayer src={track()?.src} />
         </div>
       </div>
 
-      <Downloader />
+      <Downloader open={modal() === "downloader"} onOpenChange={setModal} />
     </>
   );
 }

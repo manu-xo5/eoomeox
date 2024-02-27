@@ -47,7 +47,7 @@ export const AudioPlayer = (props: ComponentProps<"audio">) => {
         </Button>
       </div>
 
-      <div class="grid grid-cols-[0.1fr,0.8fr,0.1fr] gap-4 items-center">
+      <div class="grid grid-cols-[0.1fr,0.8fr,0.1fr] -[100vw] gap-4 items-center">
         <div />
 
         <div class="flex items-center text-xs">
