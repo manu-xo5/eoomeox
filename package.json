@@ -1,55 +1,57 @@
 {
-  "name": "eoomeox",
-  "private": true,
-  "email": "mrcherry012@gmail.com",
-  "version": "0.0.0",
-  "type": "module",
-  "main": "electron.js",
-  "build": {
-    "directories": {
-      "output": "releases",
-      "buildResources": "dist"
+    "name": "eoomeox",
+    "private": true,
+    "email": "mrcherry012@gmail.com",
+    "version": "0.0.0",
+    "type": "module",
+    "main": "electron.js",
+    "build": {
+        "directories": {
+            "output": "releases",
+            "buildResources": "dist"
+        },
+        "files": [
+            "dist/**/*",
+            "node_modules/**/*",
+            "electron.js",
+            "preload.cjs",
+            "package.json",
+            "electron/**/*"
+        ]
     },
-    "files": [
-      "dist/**/*",
-      "node_modules/**/*",
-      "electron.js",
-      "preload.cjs",
-      "package.json"
-    ]
-  },
-  "scripts": {
-    "dev": "pnpx nodemon -x pnpm dev:start -w electron.js preload.cjs",
-    "dev:start": "concurrently \"pnpm dev:vite\" \"pnpm dev:e\"",
-    "dev:vite": "vite",
-    "dev:e": "electron .",
-    "build:vite": "tsc && vite build",
-    "build": "tsc && vite build && electron-builder",
-    "install-app": "vite build && electron-builder && ./install.sh",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@kobalte/core": "^0.11.2",
-    "axios": "^1.6.7",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.0",
-    "electron-is-dev": "^3.0.1",
-    "solid-icons": "^1.1.0",
-    "solid-js": "^1.7",
-    "tailwind-merge": "^2.2.0",
-    "tailwind-scrollbar": "^3.1.0",
-    "tailwindcss-animate": "^1.0.7"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.6",
-    "autoprefixer": "^10.4.16",
-    "concurrently": "^8.2.2",
-    "electron": "^28.1.1",
-    "electron-builder": "^24.9.1",
-    "postcss": "^8.4.33",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "vite-plugin-solid": "^2.8.0"
-  }
+    "scripts": {
+        "dev": "nodemon -x pnpm dev:start -w electron.js preload.cjs",
+        "dev:start": "concurrently \"pnpm dev:vite\" \"sleep 2 && pnpm dev:e\"",
+        "dev:vite": "vite",
+        "dev:e": "electron .",
+        "build:vite": "tsc && vite build",
+        "build": "tsc && vite build && electron-builder",
+        "install-app": "vite build && electron-builder && ./install.sh",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@kobalte/core": "^0.11.2",
+        "axios": "^1.6.7",
+        "class-variance-authority": "^0.7.0",
+        "clsx": "^2.1.0",
+        "electron-is-dev": "^3.0.1",
+        "solid-icons": "^1.1.0",
+        "solid-js": "^1.7",
+        "tailwind-merge": "^2.2.0",
+        "tailwind-scrollbar": "^3.1.0",
+        "tailwindcss-animate": "^1.0.7"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.6",
+        "autoprefixer": "^10.4.16",
+        "concurrently": "^8.2.2",
+        "electron": "^28.1.1",
+        "electron-builder": "^24.9.1",
+        "nodemon": "^3.1.0",
+        "postcss": "^8.4.33",
+        "tailwindcss": "^3.4.1",
+        "typescript": "^5.2.2",
+        "vite": "^5.0.8",
+        "vite-plugin-solid": "^2.8.0"
+    }
 }

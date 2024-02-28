@@ -1,4 +1,4 @@
-import { createSignal, onMount } from "solid-js";
+import { createEffect, createSignal, onMount } from "solid-js";
 import { AudioPlayer } from "@/components/ui/audio-player";
 import { Button } from "@/components/ui/button";
 import { PlayIcon } from "./icons/play-icon";
@@ -28,12 +28,24 @@ export function App() {
     const { dirPath, files } = await window.x.openDirDialog();
     setDirectoryList((prev) => ({ ...prev, [dirPath]: files }));
   });
+
+  createEffect(() => {
+    (window as any)
+      .getCover(`~/music/${track()?.name}`)
+      .then((cover: string) => {
+        console.log(cover);
+      });
+  });
   return (
     <>
       <div class="h-screen flex flex-col">
         <div class="grid grid-cols-[21vw_1fr] flex-1">
           <div class="flex flex-col p-4 border-r border-border">
             <div class="flex-1">
+              <p class="pb-4 px-0 -mx-4 truncate text-center border-b">
+                <span class="text-5xl flex-1 font-bold">Emeox</span>
+              </p>
+
               {Object.entries(directoryList()).map(([dir, files]) => (
                 <>
                   <p class="px-2 mt-2 truncate">
@@ -50,9 +62,7 @@ export function App() {
                         });
                       }}
                     >
-                      <span class="block truncate flex-1">
-                        {formatName(name)}
-                      </span>
+                      <span class="block truncate flex-1">{name}</span>
 
                       <span class="flex-none group-hover:opacity-100 transition-opacity opacity-0">
                         <PlayIcon />
@@ -68,9 +78,7 @@ export function App() {
               onClick={async () => {
                 try {
                   const data = await window.dialog.openDirDialog();
-
                   invariantAppError(data, "No data");
-
                   const { dirPath, files } = data;
                   setDirectoryList({ [dirPath]: files });
                 } catch (e) {
@@ -97,7 +105,7 @@ export function App() {
             </Button>
           </div>
 
-          <div class="flex flex-col border">
+          <div class="flex flex-col">
             {track()?.name ? (
               <div class="flex-1 flex justify-center items-center">
                 <TextArc
@@ -108,7 +116,9 @@ export function App() {
                 />
               </div>
             ) : (
-              <p class="[-webkit-text-stroke:1px_#ccc] text-6xl">Eoomeox</p>
+              <div class="flex-1 flex justify-center items-center font-normal text-secondary-foreground">
+                <p class="[-webkit-text-stroke:1px_#ccc] ">Select a music.</p>
+              </div>
             )}
           </div>
         </div>

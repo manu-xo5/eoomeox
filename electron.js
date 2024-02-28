@@ -2,7 +2,10 @@ import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from "electron";
 import isDev from "electron-is-dev";
 import path from "node:path";
 import fs from "node:fs/promises";
-import { spawn } from "node:child_process";
+import { exec, spawn } from "node:child_process";
+
+/** @type {BrowserWindow | null} */
+globalThis.mainWindow = null;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -18,6 +21,8 @@ function createWindow() {
     console.info("Creating Production Build");
     win.loadFile(path.join(app.getAppPath(), "/dist/index.html"));
   } else win.loadURL("http://localhost:5173");
+
+  globalThis.mainWindow = win;
 }
 
 async function main() {
@@ -34,26 +39,8 @@ async function main() {
     console.log(...args);
     return downloadVideoUsingYtDlp(...args);
   });
-  ipcMain.handle("openDirDialog", async () => {
-    const result = await dialog.showOpenDialog({
-      properties: ["openDirectory"],
-    });
-    if (result.canceled) return null;
-
-    const dirPath = result.filePaths[0];
-    const filePaths = await fs.readdir(dirPath);
-    const fileBins = await Promise.all(
-      filePaths.map((relativePath) =>
-        fs.readFile(path.join(dirPath, relativePath), "base64"),
-      ),
-    );
-    const files = fileBins.map((file, i) => ({
-      name: filePaths[i],
-      file: file,
-    }));
-
-    return { files, dirPath };
-  });
+  ipcMain.handle("openDirDialog", handleOpenDir);
+  ipcMain.handle("getCover", getCover);
 
   createWindow();
 }
@@ -90,6 +77,26 @@ function getFormats(url) {
   });
 }
 
+async function handleOpenDir() {
+  const result = await dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
+  if (result.canceled) return null;
+
+  const dirPath = result.filePaths[0];
+  const filePaths = await fs.readdir(dirPath);
+  const fileBins = await Promise.all(
+    filePaths.map((relativePath) =>
+      fs.readFile(path.join(dirPath, relativePath), "base64"),
+    ),
+  );
+  const files = fileBins.map((file, i) => ({
+    name: filePaths[i],
+    file: file,
+  }));
+
+  return { files, dirPath };
+}
 /**
  * @param {string} url
  * @param {string} formatExt
@@ -104,18 +111,16 @@ function downloadVideoUsingYtDlp(url, _formatExt, formatId) {
     formatId,
     "-w",
     "--no-part",
+    "--embed-thumbnail",
   ]);
   let data = "";
 
-  const res = () => {};
-  const rej = () => {};
-
-  function* listener() {
+  return new Promise((res, rej) => {
     ytdlp.stdout.on("data", (stdData) => {
       console.log(data.toString());
       data += stdData.toString();
 
-      console.log(listener.listen);
+      globalThis.mainWindow.webContents.send("downloadListener", stdData.toString())
       stdData.toString();
     });
 
@@ -134,6 +139,35 @@ function downloadVideoUsingYtDlp(url, _formatExt, formatId) {
       res(data);
       return true;
     });
-  }
-  return listener();
+  });
+}
+
+/**
+ * @param {import("electron").IpcMainInvokeEvent} _e
+ * @param {string} filePaths
+ */
+async function getCover(_e, filePath) {
+  const cover = exec(`ffmpeg -i ${filePath} -an -vcodec copy TMP_cover.jpg`);
+  await new Promise((res, rej) => {
+    let data = "";
+    cover.stdout.on("data", (stdData) => {
+      data += stdData.toString();
+    });
+    cover.stderr.on("data", (data) => {
+      console.error(data.toString());
+      rej(data.toString());
+    });
+
+    cover.on("error", (_err) => {
+      rej("yt-dlp not found. Please install it.");
+    });
+
+    cover.on("close", (_code) => {
+      res(data);
+    });
+  });
+
+  // const coverB64 = await fs.readFile("TMP_cover.jpg", "base64");
+  // return coverB64;
+  return "";
 }

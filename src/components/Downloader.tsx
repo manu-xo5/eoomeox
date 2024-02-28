@@ -6,18 +6,23 @@ import { FiInfo, FiLoader, FiMusic, FiVideo } from "solid-icons/fi";
 import { invariantAppError } from "@/lib/invariant";
 import { toast } from "./ui/toast";
 import { Dialog as DialogPrimitive } from "@kobalte/core";
-import { listeners } from "process";
 
 export const Downloader = (props: DialogPrimitive.DialogRootProps) => {
   const [open] = createSignal(false);
-  const [downloadStatus, setDownloadStatus] = createSignal("idle");
   const [url, setUrl] = createSignal(
-    "https://www.youtube.com/watch?v=MAEzNKigRVQ",
+    "https://www.youtube.com/watch?v=j5yt3GynC4Y&pp=ygURZ2FuZ3N0YSB3aWZlIHNvbmc%3D",
   );
   const [formats, setFormats] = createSignal(
     JSON.parse(localStorage.getItem("formats") || "[]"),
   );
   const [status, setStatus] = createSignal<"idle" | "loading">("idle");
+  const [downloadStats, setDownloadStats] = createSignal<{
+    formatId: string;
+    percent: string;
+    size: string;
+    netSpeed: string;
+    eta: string;
+  } | null>(null);
 
   createEffect(() => {
     if (open() === false) {
@@ -103,7 +108,14 @@ export const Downloader = (props: DialogPrimitive.DialogRootProps) => {
             >
               {(format) => (
                 <Button
-                  class="w-full text-left justify-start flex items-center gap-2 bg-secondary text-secondary-foreground rounded-md px-3 py-1 text-sm"
+                  style={{
+                    "--x":
+                      downloadStats()?.formatId === format.format_id &&
+                        downloadStats()?.percent
+                        ? downloadStats()?.percent
+                        : "0%",
+                  }}
+                  class="relative w-full text-left justify-start flex items-center gap-2 bg-secondary text-secondary-foreground rounded-md px-3 py-1 text-sm before:absolute before:right-full before:transition-transform before:top-0 before:h-full before:w-full before:translate-x-[--x] before:z-10 before:bg-blue-500/70 overflow-hidden"
                   onClick={async () => {
                     try {
                       const ext =
@@ -111,12 +123,30 @@ export const Downloader = (props: DialogPrimitive.DialogRootProps) => {
                           ? format.video_ext
                           : format.audio_ext;
                       toast({ title: "Downloading - " + ext });
-                      const listener = (await (window as any).download(
-                        url(),
-                        ext,
-                        format.format_id,
-                      )) as { onData(data: any): void };
-                      console.log(listener);
+
+                      window.downloadListener((data) => {
+                        if (!/\d.\d%/.test(data)) return;
+                        const parsed = data
+                          .replace(/\s+/g, " ")
+                          .split(" ")
+                          .filter(Boolean);
+
+                        const [, percent, , size, , netSpeed, , eta] = parsed;
+                        setDownloadStats({
+                          formatId: format.format_id,
+                          percent,
+                          size,
+                          netSpeed,
+                          eta,
+                        });
+
+                        console.log([percent, size, netSpeed, eta]);
+                      });
+
+                      await window.download(url(), ext, format.format_id);
+
+                      window.downloadListener(() => { });
+
                       toast({ title: "Downloaded" });
                     } catch (e) {
                       console.error(e);
@@ -145,8 +175,6 @@ export const Downloader = (props: DialogPrimitive.DialogRootProps) => {
                   <span class="text-muted-foreground text-xs capitalize">
                     Playback: {format.format.match(/\((.*)\)/)?.[1]}
                   </span>
-                  {/* Bitrate: {format.format.replace(/\(.*\)/, "(X)")} */}
-                  {/* {format} {ext} {resolution} */}
                 </Button>
               )}
             </For>

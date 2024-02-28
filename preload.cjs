@@ -10,8 +10,17 @@ contextBridge.exposeInMainWorld("getFormats", (url) =>
   ipcRenderer.invoke("getFormats", url),
 );
 contextBridge.exposeInMainWorld("download", (...args) => {
-  console.log("hey<", ...args);
   return ipcRenderer.invoke("download", ...args);
+});
+
+["downloadListener"].forEach((channel) => {
+  contextBridge.exposeInMainWorld(channel, (callback) => {
+    ipcRenderer.on(channel, (_event, value) => callback(value));
+  });
+});
+
+contextBridge.exposeInMainWorld("getCover", (...args) => {
+  return ipcRenderer.invoke("getCover", ...args);
 });
 
 contextBridge.exposeInMainWorld("x", {

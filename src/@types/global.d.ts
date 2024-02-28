@@ -10,5 +10,13 @@ declare global {
     };
 
     fs: typeof fs;
+
+    downloadListener: (callback: (data: string) => void) => void;
+
+    download: (
+      url: string,
+      fileExtension: string,
+      formatId: string,
+    ) => Promise<void>;
   }
 }
