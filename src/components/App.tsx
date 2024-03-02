@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onMount } from "solid-js";
+import { For, createEffect, createSignal, onMount } from "solid-js";
 import { AudioPlayer } from "@/components/ui/audio-player";
 import { Button } from "@/components/ui/button";
 import { PlayIcon } from "./icons/play-icon";
@@ -7,6 +7,8 @@ import { Downloader } from "./Downloader";
 import { AppError } from "@/lib/error";
 import { invariantAppError } from "@/lib/invariant";
 import { toast } from "./ui/toast";
+import { Motion } from "solid-motionone";
+import { spring } from "motion";
 
 const formatName = (name: string) =>
   name.split(".").reverse().slice(1).join(" ").replace(/-/g, " ").toLowerCase();
@@ -46,31 +48,48 @@ export function App() {
                 <span class="text-5xl flex-1 font-bold">Emeox</span>
               </p>
 
-              {Object.entries(directoryList()).map(([dir, files]) => (
-                <>
-                  <p class="px-2 mt-2 truncate">
-                    <span class="font-bold">Album:</span> {dir}
-                  </p>
-                  {files.map(({ name, file }) => (
-                    <Button
-                      class="border mt-2 px-2 w-full text-left justify-between capitalize group gap-2"
-                      variant="ghost"
-                      onClick={() => {
-                        setTrack({
-                          name,
-                          src: "data:audio/mpeg;base64," + file,
-                        });
-                      }}
-                    >
-                      <span class="block truncate flex-1">{name}</span>
+              <For each={Object.entries(directoryList())}>
+                {([dir, files], i) => (
+                  <>
+                    <p class="px-2 mt-2 truncate">
+                      {i()}
+                      <span class="font-bold">Album:</span> {dir}
+                    </p>
 
-                      <span class="flex-none group-hover:opacity-100 transition-opacity opacity-0">
-                        <PlayIcon />
-                      </span>
-                    </Button>
-                  ))}
-                </>
-              ))}
+                    {files.map(({ name, file }, i) => (
+                      <Motion
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                      >
+                        <Button
+                          class="border mt-2 px-2 w-full text-left justify-between capitalize group gap-2"
+                          variant="ghost"
+                          onClick={() => {
+                            setTrack({
+                              name,
+                              src: "data:audio/mpeg;base64," + file,
+                            });
+                          }}
+                        >
+                          <span class="block truncate flex-1">
+                            {name
+                              .split(".")
+                              .reverse()
+                              .slice(1)
+                              .reverse()
+                              .join(" ")}
+                          </span>
+
+                          <span class="flex-none group-hover:opacity-100 transition-opacity opacity-0">
+                            <PlayIcon />
+                          </span>
+                        </Button>
+                      </Motion>
+                    ))}
+                  </>
+                )}
+              </For>
             </div>
 
             <Button

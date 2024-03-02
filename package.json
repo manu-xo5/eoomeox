@@ -35,8 +35,10 @@
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.0",
         "electron-is-dev": "^3.0.1",
+        "motion": "^10.17.0",
         "solid-icons": "^1.1.0",
         "solid-js": "^1.7",
+        "solid-motionone": "^1.0.0",
         "tailwind-merge": "^2.2.0",
         "tailwind-scrollbar": "^3.1.0",
         "tailwindcss-animate": "^1.0.7"
