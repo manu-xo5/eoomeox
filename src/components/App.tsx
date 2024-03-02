@@ -52,7 +52,6 @@ export function App() {
                 {([dir, files], i) => (
                   <>
                     <p class="px-2 mt-2 truncate">
-                      {i()}
                       <span class="font-bold">Album:</span> {dir}
                     </p>
 
